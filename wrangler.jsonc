@@ -1,14 +1,10 @@
 {
   "$schema": "node_modules/wrangler/config-schema.json",
   "name": "access-token",
-  "main": "src/worker.mjs",
+  "main": "dist/worker.mjs",
   "compatibility_date": "2026-10-27",
   "workers_dev": true,
-  "assets": {
-    "directory": "./public",
-    "binding": "ASSETS",
-    "run_worker_first": true
-  },
+  "build": { "command": "node build-worker.mjs" },
   "vars": {
     "API_BASE_URL": "https://tm.goldoak.cn",
     // The editable form defaults to test. Only listed devices can receive public tokens.
@@ -17,7 +13,7 @@
     "PUBLIC_DEVICE_IDS": "[\"test\"]",
     "APP_VERSION": "V0.2.8",
     "DEVICE_VERSION": "1.3",
-    "TURNSTILE_SITE_KEY": "",
+    "TURNSTILE_SITE_KEY": "0x4AAAAAAFn4bwZe40_lYtGV",
     // Optional. Set to the final HTTPS origin, with no trailing slash.
     "PUBLIC_ORIGIN": ""
   },
