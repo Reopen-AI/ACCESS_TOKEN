@@ -115,7 +115,8 @@ export async function makeAuthBody(config, timestamp = Math.floor(Date.now() / 1
 async function verifyTurnstile(request, config, token, upstreamFetch) {
   try {
     const result = await upstreamFetch('https://challenges.cloudflare.com/turnstile/v0/siteverify', {
-      method: 'POST', redirect: 'error', signal: AbortSignal.timeout(10000),
+      // Workers supports manual/follow; reject 3xx through result.ok below.
+      method: 'POST', redirect: 'manual', signal: AbortSignal.timeout(10000),
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ secret: config.turnstileSecret, response: token, remoteip: request.headers.get('CF-Connecting-IP') }),
     });
@@ -163,7 +164,7 @@ async function issueToken(request, env, config, upstreamFetch) {
   let payload;
   try {
     const response = await upstreamFetch(config.authUrl, {
-      method: 'POST', redirect: 'error', signal: AbortSignal.timeout(12000),
+      method: 'POST', redirect: 'manual', signal: AbortSignal.timeout(12000),
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(await makeAuthBody({ ...config, deviceId })),
     });
