@@ -65,7 +65,7 @@ test('valid applicant gets only the token, selected public device and explicit l
   assert.match(auth.body.nonce, /^[0-9a-f]{10}$/);
   assert.ok(Math.abs(auth.body.timestamp - Date.now() / 1000) < 3);
   assert.equal(auth.body.sign, createHmac('sha256', secret).update([auth.body.device_id, auth.body.app_version, auth.body.device_version, auth.body.timestamp, auth.body.nonce].join('|')).digest('hex'));
-  for (const call of s.calls) { assert.equal(call.init.redirect, 'error'); assert.ok(call.init.signal instanceof AbortSignal); }
+  for (const call of s.calls) { assert.equal(call.init.redirect, 'manual'); assert.ok(call.init.signal instanceof AbortSignal); }
   assert.deepEqual(s.limits.map(([type]) => type), ['ip', 'site']);
 });
 
@@ -169,6 +169,21 @@ test('Turnstile network failure does not reach auth API', async () => {
   const s = setup({ verificationError: true });
   assert.equal((await s.run()).status, 503);
   assert.equal(s.calls.length, 1);
+});
+
+for (const stage of ['verification', 'auth']) test(`${stage} redirects fail closed without accepting a token`, async () => {
+  const s = setup({
+    [`${stage}Response`]: () => new Response(JSON.stringify(stage === 'verification'
+      ? { success: true, hostname: 'tokens.example.com', action: 'token_apply' }
+      : { code: 0, data: { access_token: dummyAccessToken } }), {
+      status: 302, headers: { Location: 'https://attacker.example/collect' },
+    }),
+  });
+  const response = await s.run();
+  assert.equal(response.status, stage === 'verification' ? 503 : 502);
+  assert.equal(s.calls.length, stage === 'verification' ? 1 : 2);
+  assert.ok(s.calls.every(call => call.init.redirect === 'manual'));
+  assert.ok(!(await response.text()).includes(dummyAccessToken));
 });
 
 for (const options of [
