@@ -1,0 +1,17 @@
+{
+  "name": "tingyi-token-portal",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "test": "node --test",
+    "preview": "node scripts/preview.mjs",
+    "dev": "node node_modules/wrangler/bin/wrangler.js dev",
+    "deploy": "node node_modules/wrangler/bin/wrangler.js deploy",
+    "check:deploy": "node node_modules/wrangler/bin/wrangler.js deploy --dry-run"
+  },
+  "devDependencies": {
+    "wrangler": "4.152.0"
+  },
+  "engines": { "node": ">=22" }
+}
